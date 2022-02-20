@@ -30,6 +30,9 @@ DAYS_IN_COUNTRY = '25'
 REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 
 MY_SCHEDULE_DATE = "<current date>"  # 2020-12-02
+
+
+
 #MY_CONDITION = lambda month,day: int(month) == 11 or (int(month) == 12 and int(day) <=5)
 def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 
