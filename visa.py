@@ -35,9 +35,9 @@ def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 
 
 SLEEP_TIME = 5   # recheck time interval
-DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/%s/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false{SCHEDULE}"
-TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/%s/appointment/times/{DAYS_IN_COUNTRY}.json?date=%%s&appointments[expedite]=false{SCHEDULE}"
-APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/%s/appointment{SCHEDULE}"
+DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
+TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%{SCHEDULE}&appointments[expedite]=false"
+APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment"
 HUB_ADDRESS = 'http://localhost:4444/wd/hub'
 EXIT = False
 
