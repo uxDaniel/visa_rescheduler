@@ -38,6 +38,8 @@ def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 
 
 SLEEP_TIME = 5   # recheck time interval
+RETRY_TIME = 3600   # recheck empty list time interval
+
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%{SCHEDULE}&appointments[expedite]=false"
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment"
@@ -256,7 +258,15 @@ if __name__ == "__main__":
                 print("------------------exit")
                 break
 
-            time.sleep(SLEEP_TIME)
+            if not dates:
+              msg = "List is empty"
+              print(msg)
+              send(msg)
+              #EXIT = True
+              time.sleep(RETRY_TIME)
+            else:
+              time.sleep(SLEEP_TIME)
+
         except:
             retry_count += 1
             time.sleep(60*5)
