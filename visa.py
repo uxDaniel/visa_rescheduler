@@ -4,6 +4,7 @@ import time
 import json
 import random
 import platform
+import configparser
 from datetime import datetime
 
 import requests
@@ -16,33 +17,35 @@ from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-USERNAME = '<username>'
-PASSWORD = '<pwd>'
-SCHEDULE = '<schedule number>'
 
-# SENDGRID_API_KEY = '<sendgrind api key>'
-# PUSH_TOKEN = '<my push token>'
-PUSH_USER = '<my push user>'
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+USERNAME = config['USVISA']['USERNAME']
+PASSWORD = config['USVISA']['PASSWORD']
+SCHEDULE_ID = config['USVISA']['SCHEDULE_ID']
+MY_SCHEDULE_DATE = config['USVISA']['MY_SCHEDULE_DATE']
+
+SENDGRID_API_KEY = config['SENDGRID']['SENDGRID_API_KEY']
+PUSH_TOKEN = config['PUSHOVER']['PUSH_TOKEN']
+PUSH_USER = config['PUSHOVER']['PUSH_USER']
 
 COUNTRY_CODE = 'es-co'
 DAYS_IN_COUNTRY = '25'
 
 REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 
-MY_SCHEDULE_DATE = "<current date>"  # 2020-12-02
 
-
-
-#MY_CONDITION = lambda month,day: int(month) == 11 or (int(month) == 12 and int(day) <=5)
-def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
+# def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
+def MY_CONDITION(month, day): return True # No custom condition wanted for the 
 
 
 SLEEP_TIME = 5   # recheck time interval
 RETRY_TIME = 3600   # recheck empty list time interval
 
-DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
-TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%{SCHEDULE}&appointments[expedite]=false"
-APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE}/appointment"
+DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
+TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%{SCHEDULE_ID}&appointments[expedite]=false"
+APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 HUB_ADDRESS = 'http://localhost:4444/wd/hub'
 EXIT = False
 
