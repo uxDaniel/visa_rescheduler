@@ -9,10 +9,11 @@ from datetime import datetime
 
 import requests
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from webdriver_manager.chrome import ChromeDriverManager
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -30,6 +31,9 @@ SENDGRID_API_KEY = config['SENDGRID']['SENDGRID_API_KEY']
 PUSH_TOKEN = config['PUSHOVER']['PUSH_TOKEN']
 PUSH_USER = config['PUSHOVER']['PUSH_USER']
 
+LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
+HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
+
 COUNTRY_CODE = 'es-co'
 DAYS_IN_COUNTRY = '25'
 
@@ -37,76 +41,73 @@ REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 
 
 # def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
-def MY_CONDITION(month, day): return True # No custom condition wanted for the 
+def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
 
 
-SLEEP_TIME = 5   # recheck time interval
-RETRY_TIME = 3600   # recheck empty list time interval
+SLEEP_TIME = 10  # recheck time interval: 10 seconds
+EXCEPTION_TIME = 60*5  # recheck exception time interval: 5 minutes
+RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%{SCHEDULE_ID}&appointments[expedite]=false"
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
-HUB_ADDRESS = 'http://localhost:4444/wd/hub'
 EXIT = False
 
 
-def send(msg):
+def send_notification(msg):
+    print(f"Sending notification: {msg}")
 
-  if SENDGRID_API_KEY:
-    message = Mail(
-        from_email=USERNAME,
-        to_emails=USERNAME,
-        subject=msg,
-        html_content=msg)
-    try:
-        sg = SendGridAPIClient(SENDGRID_API_KEY)
-        response = sg.send(message)
-        print(response.status_code)
-        print(response.body)
-        print(response.headers)
-    except Exception as e:
-        print(e.message)
+    if SENDGRID_API_KEY:
+        message = Mail(
+            from_email=USERNAME,
+            to_emails=USERNAME,
+            subject=msg,
+            html_content=msg)
+        try:
+            sg = SendGridAPIClient(SENDGRID_API_KEY)
+            response = sg.send(message)
+            print(response.status_code)
+            print(response.body)
+            print(response.headers)
+        except Exception as e:
+            print(e.message)
 
-  if PUSH_TOKEN:
-    url = "https://api.pushover.net/1/messages.json"
-    data = {
-        "token": PUSH_TOKEN,
-        "user": PUSH_USER,
-        "message": msg
-    }
-    requests.post(url, data)
+    if PUSH_TOKEN:
+        url = "https://api.pushover.net/1/messages.json"
+        data = {
+            "token": PUSH_TOKEN,
+            "user": PUSH_USER,
+            "message": msg
+        }
+        requests.post(url, data)
 
 
-def get_drive():
-    local_use = platform.system() == 'Darwin'
-    if local_use:
-        dr = webdriver.Chrome(executable_path='./chromedriver')
+def get_driver():
+    if LOCAL_USE:
+        dr = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     else:
-        dr = webdriver.Remote(command_executor=HUB_ADDRESS,
-                              desired_capabilities=DesiredCapabilities.CHROME)
+        dr = webdriver.Remote(command_executor=HUB_ADDRESS, options=webdriver.ChromeOptions())
     return dr
 
-
-driver = get_drive()
+driver = get_driver()
 
 
 def login():
     # Bypass reCAPTCHA
     driver.get(f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv")
     time.sleep(1)
-    a = driver.find_element_by_xpath('//a[@class="down-arrow bounce"]')
+    a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
     a.click()
     time.sleep(1)
 
-    print("start sign")
-    href = driver.find_element_by_xpath(
-        '//*[@id="header"]/nav/div[2]/div[1]/ul/li[3]/a')
+    print("Login start...")
+    href = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div[2]/div[1]/ul/li[3]/a')
     href.click()
     time.sleep(1)
     Wait(driver, 60).until(EC.presence_of_element_located((By.NAME, "commit")))
 
-    print("click bounce")
-    a = driver.find_element_by_xpath('//a[@class="down-arrow bounce"]')
+    print("\tclick bounce")
+    a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
     a.click()
     time.sleep(1)
 
@@ -114,38 +115,38 @@ def login():
 
 
 def do_login_action():
-    print("input email")
-    user = driver.find_element_by_id('user_email')
+    print("\tinput email")
+    user = driver.find_element(By.ID, 'user_email')
     user.send_keys(USERNAME)
     time.sleep(random.randint(1, 3))
 
-    print("input pwd")
-    pw = driver.find_element_by_id('user_password')
+    print("\tinput pwd")
+    pw = driver.find_element(By.ID, 'user_password')
     pw.send_keys(PASSWORD)
     time.sleep(random.randint(1, 3))
 
-    print("click privacy")
-    box = driver.find_element_by_class_name('icheckbox')
+    print("\tclick privacy")
+    box = driver.find_element(By.CLASS_NAME, 'icheckbox')
     box .click()
     time.sleep(random.randint(1, 3))
 
-    print("commit")
-    btn = driver.find_element_by_name('commit')
+    print("\tcommit")
+    btn = driver.find_element(By.NAME, 'commit')
     btn.click()
     time.sleep(random.randint(1, 3))
 
     Wait(driver, 60).until(
         EC.presence_of_element_located((By.XPATH, REGEX_CONTINUE)))
-    print("Login successfully! ")
+    print("\tlogin successful!")
 
 
 def get_date():
     driver.get(DATE_URL)
-    if not is_logined():
+    if not is_logged_in():
         login()
         return get_date()
     else:
-        content = driver.find_element_by_tag_name('pre').text
+        content = driver.find_element(By.TAG_NAME, 'pre').text
         date = json.loads(content)
         return date
 
@@ -153,16 +154,16 @@ def get_date():
 def get_time(date):
     time_url = TIME_URL % date
     driver.get(time_url)
-    content = driver.find_element_by_tag_name('pre').text
+    content = driver.find_element(By.TAG_NAME, 'pre').text
     data = json.loads(content)
     time = data.get("available_times")[-1]
-    print("Get time successfully!")
+    print(f"Got time successfully! {date} {time}")
     return time
 
 
 def reschedule(date):
     global EXIT
-    print("Start Reschedule")
+    print(f"Starting Reschedule ({date})")
 
     time = get_time(date)
     driver.get(APPOINTMENT_URL)
@@ -185,25 +186,25 @@ def reschedule(date):
 
     r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
     if(r.text.find('Successfully Scheduled') != -1):
-        print("Successfully Rescheduled")
-        send("Successfully Rescheduled")
+        msg = f"Rescheduled Successfully! {date} {time}"
+        send_notification(msg)
         EXIT = True
     else:
-        print("ReScheduled Fail")
-        send("ReScheduled Fail")
+        msg = f"Reschedule Failed. {date} {time}"
+        send_notification(msg)
 
 
-def is_logined():
+def is_logged_in():
     content = driver.page_source
     if(content.find("error") != -1):
         return False
     return True
 
 
-def print_date(dates):
+def print_dates(dates):
+    print("Available dates:")
     for d in dates:
-        print("%s \t business_day: %s" %
-              (d.get('date'), d.get('business_day')))
+        print("%s \t business_day: %s" % (d.get('date'), d.get('business_day')))
     print()
 
 
@@ -214,8 +215,13 @@ def get_available_date(dates):
     global last_seen
 
     def is_earlier(date):
-        return datetime.strptime(MY_SCHEDULE_DATE, "%Y-%m-%d") > datetime.strptime(date, "%Y-%m-%d")
+        my_date = datetime.strptime(MY_SCHEDULE_DATE, "%Y-%m-%d")
+        new_date = datetime.strptime(date, "%Y-%m-%d")
+        result = my_date > new_date
+        print(f'Is {my_date} > {new_date}:\t{result}')
+        return result
 
+    print("Checking for an earlier date:")
     for d in dates:
         date = d.get('date')
         if is_earlier(date) and date != last_seen:
@@ -229,7 +235,7 @@ def push_notification(dates):
     msg = "date: "
     for d in dates:
         msg = msg + d.get('date') + '; '
-    send(msg)
+    send_notification(msg)
 
 
 if __name__ == "__main__":
@@ -239,20 +245,20 @@ if __name__ == "__main__":
         if retry_count > 6:
             break
         try:
-            print(retry_count)
-            print(datetime.today())
             print("------------------")
+            print(datetime.today())
+            print(f"Retry count: {retry_count}")
+            print()
 
             dates = get_date()[:5]
             if not dates:
               msg = "List is empty"
-              print(msg)
-              send(msg)
+              send_notification(msg)
               EXIT = True
-            print_date(dates)
+            print_dates(dates)
             date = get_available_date(dates)
-            print(date)
-            print("------------------")
+            print()
+            print(f"New date: {date}")
             if date:
                 reschedule(date)
                 push_notification(dates)
@@ -263,8 +269,7 @@ if __name__ == "__main__":
 
             if not dates:
               msg = "List is empty"
-              print(msg)
-              send(msg)
+              send_notification(msg)
               #EXIT = True
               time.sleep(RETRY_TIME)
             else:
@@ -272,7 +277,7 @@ if __name__ == "__main__":
 
         except:
             retry_count += 1
-            time.sleep(60*5)
+            time.sleep(EXCEPTION_TIME)
 
     if(not EXIT):
-        send("HELP! Crashed.")
+        send_notification("HELP! Crashed.")
