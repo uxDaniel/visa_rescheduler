@@ -43,8 +43,8 @@ REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 # def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
 
-
-SLEEP_TIME = 10  # recheck time interval: 10 seconds
+STEP_TIME = 0.5  # time between steps (interactions): 0.5 seconds
+SLEEP_TIME = 20  # recheck time interval: 20 seconds
 EXCEPTION_TIME = 60*5  # recheck exception time interval: 5 minutes
 RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
 
@@ -95,21 +95,21 @@ driver = get_driver()
 def login():
     # Bypass reCAPTCHA
     driver.get(f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv")
-    time.sleep(1)
+    time.sleep(STEP_TIME)
     a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
     a.click()
-    time.sleep(1)
+    time.sleep(STEP_TIME)
 
     print("Login start...")
     href = driver.find_element(By.XPATH, '//*[@id="header"]/nav/div[2]/div[1]/ul/li[3]/a')
     href.click()
-    time.sleep(1)
+    time.sleep(STEP_TIME)
     Wait(driver, 60).until(EC.presence_of_element_located((By.NAME, "commit")))
 
     print("\tclick bounce")
     a = driver.find_element(By.XPATH, '//a[@class="down-arrow bounce"]')
     a.click()
-    time.sleep(1)
+    time.sleep(STEP_TIME)
 
     do_login_action()
 
