@@ -13,10 +13,13 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import Select
 from webdriver_manager.chrome import ChromeDriverManager
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
+
+from urllib import parse
 
 
 config = configparser.ConfigParser()
@@ -36,6 +39,7 @@ HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
 COUNTRY_CODE = 'es-co'
 DAYS_IN_COUNTRY = '25'
+CAS_DAYS_IN_COUNTRY = '26'
 
 REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 
@@ -50,8 +54,12 @@ RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%s&appointments[expedite]=false"
+CAS_DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{CAS_DAYS_IN_COUNTRY}.json?&consulate_id={DAYS_IN_COUNTRY}&consulate_date=%s&appointments[expedite]=false"
+CAS_TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{CAS_DAYS_IN_COUNTRY}.json?date=%s&consulate_id={DAYS_IN_COUNTRY}&appointments[expedite]=false"
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 EXIT = False
+
+MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 
 
 def send_notification(msg):
@@ -127,7 +135,7 @@ def do_login_action():
 
     print("\tclick privacy")
     box = driver.find_element(By.CLASS_NAME, 'icheckbox')
-    box .click()
+    box.click()
     time.sleep(random.randint(1, 3))
 
     print("\tcommit")
@@ -161,37 +169,110 @@ def get_time(date):
     return time
 
 
+def get_cas_date():
+    date_url = CAS_DATE_URL % date
+    driver.get(date_url)
+    content = driver.find_element(By.TAG_NAME, 'pre').text
+    date = json.loads(content)
+    return date[-1].date
+
+
+def get_cas_time(date):
+    time_url = CAS_TIME_URL % date
+    driver.get(time_url)
+    content = driver.find_element(By.TAG_NAME, 'pre').text
+    data = json.loads(content)
+    time = data.get("available_times")[-1]
+    print(f"Got CAS time successfully! {date} {time}")
+    return time
+
+
+def select_date(date):
+    print(f"Selecting date: {date}")
+    time.sleep(STEP_TIME)
+    month = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-month')
+    year = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-year')
+    expected_month = MONTHS[int(date[5:7]) - 1]
+    expected_year = date[0:4]
+    tries = 0
+
+    while month.text != expected_month or year.text != expected_year and tries < 24:
+        next_button = driver.find_element(By.CSS_SELECTOR, '.ui-datepicker-next.ui-corner-all')
+        next_button.click()
+        month = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-month')
+        year = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-year')
+        tries += 1
+
+    if tries == 24:
+        print("Could not find expected month/year")
+        return False
+    
+    day_button = driver.find_element(By.XPATH, f'//a[text()="{date[8:10]}"]')
+    day_button.click()
+
+
+def fill_reschedule_form(date, new_time):
+    print(f"Filling reschedule form for {date} {new_time}")
+    date_input = driver.find_element(By.ID, 'appointments_consulate_appointment_date')
+    date_input.click()
+
+    select_date(date)
+    time.sleep(STEP_TIME)
+    date_input.click()
+    select_date(date)
+
+    time.sleep(2)
+    time_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time'))
+    time_select.select_by_value(new_time)
+
+
+def fill_cas_form(date, new_time):
+    print(f"Filling CAS form for {date} {new_time}")
+    date_input = driver.find_element(By.ID, 'appointments_asc_appointment_date')
+    date_input.click()
+
+    select_date(date)
+    time.sleep(STEP_TIME)
+    date_input.click()
+    select_date(date)
+
+    time.sleep(2)
+    time_select = Select(driver.find_element(By.ID, 'appointments_asc_appointment_time'))
+    time_select.select_by_value(new_time)
+
+
+def submit_reschedule_form():
+    reschedule_btn = driver.find_element(By.ID, 'appointments_submit')
+    reschedule_btn.click()
+
+    confirm_btn = driver.find_element(By.CSS_SELECTOR, 'a.button.alert')
+    confirm_btn.click()
+
+
 def reschedule(date):
     global EXIT
     print(f"Starting Reschedule ({date})")
 
-    time = get_time(date)
+    msg = f"Ready to reschedule for {date}"
+    send_notification(msg)
+    EXIT = True
+    
+    new_time = get_time(date)
     driver.get(APPOINTMENT_URL)
+    btn = driver.find_element(By.NAME, 'commit')
+    btn.click()
 
-    data = {
-        "utf8": driver.find_element_by_name('utf8').get_attribute('value'),
-        "authenticity_token": driver.find_element_by_name('authenticity_token').get_attribute('value'),
-        "confirmed_limit_message": driver.find_element_by_name('confirmed_limit_message').get_attribute('value'),
-        "use_consulate_appointment_capacity": driver.find_element_by_name('use_consulate_appointment_capacity').get_attribute('value'),
-        "appointments[consulate_appointment][facility_id]": DAYS_IN_COUNTRY, # 108
-        "appointments[consulate_appointment][date]": date,
-        "appointments[consulate_appointment][time]": time,
-    }
+    fill_reschedule_form(date, new_time)
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36",
-        "Referer": APPOINTMENT_URL,
-        "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"]
-    }
+    cas_date = get_cas_date()
+    cas_time = get_cas_time(cas_date)
 
-    r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
-    if(r.text.find('Successfully Scheduled') != -1):
-        msg = f"Rescheduled Successfully! {date} {time}"
-        send_notification(msg)
-        EXIT = True
-    else:
-        msg = f"Reschedule Failed. {date} {time}"
-        send_notification(msg)
+    if cas_time and cas_time:
+        fill_cas_form(cas_date, cas_time)
+
+    time.sleep(2)
+    submit_reschedule_form()
+    send_notification("Reschedule finished!")
 
 
 def is_logged_in():
@@ -251,29 +332,26 @@ if __name__ == "__main__":
             print()
 
             dates = get_date()[:5]
-            if not dates:
-              msg = "List is empty"
-              send_notification(msg)
-              EXIT = True
             print_dates(dates)
             date = get_available_date(dates)
             print()
             print(f"New date: {date}")
             if date:
-                reschedule(date)
                 push_notification(dates)
+                reschedule(date)
 
             if(EXIT):
                 print("------------------exit")
                 break
 
             if not dates:
-              msg = "List is empty"
+              msg = "List is empty. Sleeping for a while"
               send_notification(msg)
-              #EXIT = True
               time.sleep(RETRY_TIME)
+              retry_count += 1
             else:
               time.sleep(SLEEP_TIME)
+              retry_count = 0
 
         except:
             retry_count += 1
