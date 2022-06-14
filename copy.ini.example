@@ -3,8 +3,8 @@
 USERNAME = example@example.com
 PASSWORD = xxxxxxxxxx
 SCHEDULE_ID = 99999999
-MY_SCHEDULE_DATE = 2024-01-01 ; YYYY-MM-DD format (Use the current appointment date you have assigned)
-MULTIPLE_APPOINTMENTS = False ; Mark as True if you have multiple persons applying with the same account
+MY_SCHEDULE_DATE = 2024-01-01
+MULTIPLE_APPOINTMENTS = False
 
 [CHROMEDRIVER]
 ; Details for the script to control Chrome

@@ -307,6 +307,7 @@ if __name__ == "__main__":
             print_dates(dates)
             if dates and retry_count > 0:
                 send_notification("Got dates!")
+                retry_count = 0
             date = get_available_date(dates)
             print()
             print(f"New date: {date}")
