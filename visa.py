@@ -159,32 +159,12 @@ def get_date():
         return date
 
 
-def get_time(date):
-    time_url = TIME_URL % date
-    driver.get(time_url)
-    content = driver.find_element(By.TAG_NAME, 'pre').text
-    data = json.loads(content)
-    time = data.get("available_times")[-1]
-    print(f"Got time successfully! {date} {time}")
-    return time
-
-
 def get_cas_date(date):
     date_url = CAS_DATE_URL % date
     driver.get(date_url)
     content = driver.find_element(By.TAG_NAME, 'pre').text
     date = json.loads(content)
     return date[-1].date
-
-
-def get_cas_time(date):
-    time_url = CAS_TIME_URL % date
-    driver.get(time_url)
-    content = driver.find_element(By.TAG_NAME, 'pre').text
-    data = json.loads(content)
-    time = data.get("available_times")[-1]
-    print(f"Got CAS time successfully! {date} {time}")
-    return time
 
 
 def select_date(date):
@@ -211,8 +191,8 @@ def select_date(date):
     day_button.click()
 
 
-def fill_reschedule_form(date, new_time):
-    print(f"Filling reschedule form for {date} {new_time}")
+def fill_reschedule_form(date):
+    print(f"Filling reschedule form for {date}")
     date_input = driver.find_element(By.ID, 'appointments_consulate_appointment_date')
     date_input.click()
 
@@ -223,11 +203,11 @@ def fill_reschedule_form(date, new_time):
 
     time.sleep(2)
     time_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time'))
-    time_select.select_by_value(new_time)
+    time_select.select_by_index(0)
 
 
-def fill_cas_form(date, new_time):
-    print(f"Filling CAS form for {date} {new_time}")
+def fill_cas_form(date):
+    print(f"Filling CAS form for {date}")
     date_input = driver.find_element(By.ID, 'appointments_asc_appointment_date')
     date_input.click()
 
@@ -238,7 +218,7 @@ def fill_cas_form(date, new_time):
 
     time.sleep(2)
     time_select = Select(driver.find_element(By.ID, 'appointments_asc_appointment_time'))
-    time_select.select_by_value(new_time)
+    time_select.select_by_index(0)
 
 
 def submit_reschedule_form():
@@ -257,17 +237,15 @@ def reschedule(date):
     send_notification(msg)
     EXIT = True
     
-    new_time = get_time(date)
     cas_date = get_cas_date(date)
-    cas_time = get_cas_time(cas_date)
     driver.get(APPOINTMENT_URL)
     btn = driver.find_element(By.NAME, 'commit')
     btn.click()
 
-    fill_reschedule_form(date, new_time)
+    fill_reschedule_form(date)
 
-    if cas_time and cas_time:
-        fill_cas_form(cas_date, cas_time)
+    if cas_date:
+        fill_cas_form(cas_date)
 
     time.sleep(2)
     submit_reschedule_form()
@@ -332,6 +310,8 @@ if __name__ == "__main__":
 
             dates = get_date()[:5]
             print_dates(dates)
+            if dates and retry_count > 0:
+                send_notification("Got dates!")
             date = get_available_date(dates)
             print()
             print(f"New date: {date}")
@@ -345,7 +325,8 @@ if __name__ == "__main__":
 
             if not dates:
               msg = "List is empty. Sleeping for a while"
-              send_notification(msg)
+              if retry_count == 0:
+                send_notification(msg)
               time.sleep(RETRY_TIME)
               retry_count += 1
             else:
