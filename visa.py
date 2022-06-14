@@ -3,7 +3,6 @@
 import time
 import json
 import random
-import platform
 import configparser
 from datetime import datetime
 
@@ -19,8 +18,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
-from urllib import parse
-
 
 config = configparser.ConfigParser()
 config.read('config.ini')
@@ -29,6 +26,7 @@ USERNAME = config['USVISA']['USERNAME']
 PASSWORD = config['USVISA']['PASSWORD']
 SCHEDULE_ID = config['USVISA']['SCHEDULE_ID']
 MY_SCHEDULE_DATE = config['USVISA']['MY_SCHEDULE_DATE']
+MULTIPLE_APPOINTMENTS = config['USVISA']['MULTIPLE_APPOINTMENTS']
 
 SENDGRID_API_KEY = config['SENDGRID']['SENDGRID_API_KEY']
 PUSH_TOKEN = config['PUSHOVER']['PUSH_TOKEN']
@@ -53,9 +51,7 @@ EXCEPTION_TIME = 60*5  # recheck exception time interval: 5 minutes
 RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
-TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{DAYS_IN_COUNTRY}.json?date=%s&appointments[expedite]=false"
 CAS_DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{CAS_DAYS_IN_COUNTRY}.json?&consulate_id={DAYS_IN_COUNTRY}&consulate_date=%s&appointments[expedite]=false"
-CAS_TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{CAS_DAYS_IN_COUNTRY}.json?date=%s&consulate_id={DAYS_IN_COUNTRY}&appointments[expedite]=false"
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 EXIT = False
 
@@ -168,7 +164,6 @@ def get_cas_date(date):
 
 
 def select_date(date):
-    print(f"Selecting date: {date}")
     time.sleep(STEP_TIME)
     month = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-month')
     year = driver.find_element(By.CSS_SELECTOR, '#ui-datepicker-div > .ui-datepicker-group-first .ui-datepicker-year')
@@ -191,34 +186,30 @@ def select_date(date):
     day_button.click()
 
 
-def fill_reschedule_form(date):
-    print(f"Filling reschedule form for {date}")
-    date_input = driver.find_element(By.ID, 'appointments_consulate_appointment_date')
+def fill_form(date, appointment_office):
+    date_input = driver.find_element(By.ID, f'appointments_{appointment_office}_appointment_date')
     date_input.click()
 
     select_date(date)
     time.sleep(STEP_TIME)
+    # Calls the select_date function twice because sometimes it doesn't populate the time options
     date_input.click()
     select_date(date)
 
+    # Sleeps waiting for the time's options to load
     time.sleep(2)
-    time_select = Select(driver.find_element(By.ID, 'appointments_consulate_appointment_time'))
+    time_select = Select(driver.find_element(By.ID, f'appointments_{appointment_office}_appointment_time'))
     time_select.select_by_index(0)
+    
+
+def fill_consulate_reschedule_form(date):
+    print(f"Filling consulate reschedule form for {date}")
+    fill_form(date, "consulate")
 
 
-def fill_cas_form(date):
-    print(f"Filling CAS form for {date}")
-    date_input = driver.find_element(By.ID, 'appointments_asc_appointment_date')
-    date_input.click()
-
-    select_date(date)
-    time.sleep(STEP_TIME)
-    date_input.click()
-    select_date(date)
-
-    time.sleep(2)
-    time_select = Select(driver.find_element(By.ID, 'appointments_asc_appointment_time'))
-    time_select.select_by_index(0)
+def fill_asc_reschedule_form(date):
+    print(f"Filling CAS reschedule form for {date}")
+    fill_form(date, "asc")
 
 
 def submit_reschedule_form():
@@ -239,17 +230,21 @@ def reschedule(date):
     
     cas_date = get_cas_date(date)
     driver.get(APPOINTMENT_URL)
-    btn = driver.find_element(By.NAME, 'commit')
-    btn.click()
 
-    fill_reschedule_form(date)
+    if MULTIPLE_APPOINTMENTS:
+        btn = driver.find_element(By.NAME, 'commit')
+        btn.click()
+
+    fill_consulate_reschedule_form(date)
 
     if cas_date:
-        fill_cas_form(cas_date)
-
-    time.sleep(2)
-    submit_reschedule_form()
-    send_notification("Reschedule finished!")
+        fill_asc_reschedule_form(cas_date)
+        time.sleep(STEP_TIME)
+        submit_reschedule_form()
+        send_notification("Reschedule finished!")
+    else:
+        print("Could not find CAS date")
+        send_notification("Could not find CAS date, please continue manually")
 
 
 def is_logged_in():
@@ -324,8 +319,8 @@ if __name__ == "__main__":
                 break
 
             if not dates:
-              msg = "List is empty. Sleeping for a while"
               if retry_count == 0:
+                msg = "List is empty. Sleeping process for a while"
                 send_notification(msg)
               time.sleep(RETRY_TIME)
               retry_count += 1
