@@ -169,7 +169,7 @@ def get_time(date):
     return time
 
 
-def get_cas_date():
+def get_cas_date(date):
     date_url = CAS_DATE_URL % date
     driver.get(date_url)
     content = driver.find_element(By.TAG_NAME, 'pre').text
@@ -258,14 +258,13 @@ def reschedule(date):
     EXIT = True
     
     new_time = get_time(date)
+    cas_date = get_cas_date(date)
+    cas_time = get_cas_time(cas_date)
     driver.get(APPOINTMENT_URL)
     btn = driver.find_element(By.NAME, 'commit')
     btn.click()
 
     fill_reschedule_form(date, new_time)
-
-    cas_date = get_cas_date()
-    cas_time = get_cas_time(cas_date)
 
     if cas_time and cas_time:
         fill_cas_form(cas_date, cas_time)
