@@ -51,7 +51,7 @@ EXCEPTION_TIME = 60*5  # recheck exception time interval: 5 minutes
 RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{DAYS_IN_COUNTRY}.json?appointments[expedite]=false"
-CAS_DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{CAS_DAYS_IN_COUNTRY}.json?&consulate_id={DAYS_IN_COUNTRY}&consulate_date=%s&appointments[expedite]=false"
+CAS_DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{CAS_DAYS_IN_COUNTRY}.json?consulate_id={DAYS_IN_COUNTRY}&consulate_date=%s&consulate_time=9:00&appointments[expedite]=false"
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 EXIT = False
 
@@ -160,7 +160,7 @@ def get_cas_date(date):
     driver.get(date_url)
     content = driver.find_element(By.TAG_NAME, 'pre').text
     date = json.loads(content)
-    return date[-1].date
+    return date[-1].get("date")
 
 
 def select_date(date):
@@ -229,6 +229,7 @@ def reschedule(date):
     EXIT = True
     
     cas_date = get_cas_date(date)
+    time.sleep(STEP_TIME)
     driver.get(APPOINTMENT_URL)
 
     if MULTIPLE_APPOINTMENTS:
