@@ -187,6 +187,7 @@ def select_date(date):
 
 
 def fill_form(date, appointment_office):
+    time.sleep(STEP_TIME)
     date_input = driver.find_element(By.ID, f'appointments_{appointment_office}_appointment_date')
     date_input.click()
 
