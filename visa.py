@@ -182,7 +182,7 @@ def select_date(date):
         print("Could not find expected month/year")
         return False
     
-    day_button = driver.find_element(By.XPATH, f'//a[text()="{date[8:10]}"]')
+    day_button = driver.find_element(By.XPATH, f'//a[text()="{date[8:10].lstrip("0")}"]')
     day_button.click()
 
 
