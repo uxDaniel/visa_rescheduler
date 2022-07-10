@@ -42,10 +42,10 @@ REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 # def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
 
-STEP_TIME = 0.5  # time between steps (interactions): 0.5 seconds
-SLEEP_TIME = 20  # recheck time interval: 20 seconds
-EXCEPTION_TIME = 60*5  # recheck exception time interval: 5 minutes
-RETRY_TIME = 60*60  # recheck empty list time interval: 60 minutes
+STEP_TIME = 0.5  # time between steps (interactions with forms): 0.5 seconds
+RETRY_TIME = 60*10  # wait time between retries/checks for available dates: 10 minutes
+EXCEPTION_TIME = 60*30  # wait time when an exception occurs: 30 minutes
+COOLDOWN_TIME = 60*60  # wait time when temporary banned (empty list): 60 minutes
 
 DATE_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/days/{FACILITY_ID}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment/times/{FACILITY_ID}.json?date=%s&appointments[expedite]=false"
@@ -270,9 +270,9 @@ if __name__ == "__main__":
               msg = "List is empty"
               send_notification(msg)
               #EXIT = True
-              time.sleep(RETRY_TIME)
+              time.sleep(COOLDOWN_TIME)
             else:
-              time.sleep(SLEEP_TIME)
+              time.sleep(RETRY_TIME)
 
         except:
             retry_count += 1
