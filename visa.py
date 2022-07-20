@@ -168,11 +168,11 @@ def reschedule(date):
     driver.get(APPOINTMENT_URL)
 
     data = {
-        "utf8": driver.find_element_by_name('utf8').get_attribute('value'),
-        "authenticity_token": driver.find_element_by_name('authenticity_token').get_attribute('value'),
-        "confirmed_limit_message": driver.find_element_by_name('confirmed_limit_message').get_attribute('value'),
-        "use_consulate_appointment_capacity": driver.find_element_by_name('use_consulate_appointment_capacity').get_attribute('value'),
-        "appointments[consulate_appointment][facility_id]": DAYS_IN_COUNTRY, # 108
+        "utf8": driver.find_element(by=By.NAME, value='utf8').get_attribute('value'),
+        "authenticity_token": driver.find_element(by=By.NAME, value='authenticity_token').get_attribute('value'),
+        "confirmed_limit_message": driver.find_element(by=By.NAME, value='confirmed_limit_message').get_attribute('value'),
+        "use_consulate_appointment_capacity": driver.find_element(by=By.NAME, value='use_consulate_appointment_capacity').get_attribute('value'),
+        "appointments[consulate_appointment][facility_id]": FACILITY_ID,
         "appointments[consulate_appointment][date]": date,
         "appointments[consulate_appointment][time]": time,
     }
