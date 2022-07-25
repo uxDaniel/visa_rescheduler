@@ -178,7 +178,7 @@ def reschedule(date):
     }
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/84.0.4147.125 Safari/537.36",
+        "User-Agent": driver.execute_script("return navigator.userAgent;"),
         "Referer": APPOINTMENT_URL,
         "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"]
     }
