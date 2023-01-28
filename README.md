@@ -13,7 +13,6 @@ US VISA (usvisa-info.com) appointment re-scheduler
 
 ## Executing the script
 - Simply run `python3 visa.py`
-- That's it!
 
 ## Acknowledgement
 Thanks to every one who participated in this repo. Lots of people are using your great product without even appreciating you.
