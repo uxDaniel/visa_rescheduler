@@ -14,7 +14,7 @@ US VISA (usvisa-info.com) appointment re-scheduler
 ## How to use
 - Initial setup!
 - Edit your personal and embassy information [visa.py file].
-- [Optional] Edit your push notification accounts [visa.py].
+- [Optional] Edit your push notification accounts information [visa.py].
 - [Optional] Edit your site push notification [visa.py and esender.php files].
 - Run `python3 visa.py`
 
