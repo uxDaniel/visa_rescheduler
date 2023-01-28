@@ -3,7 +3,6 @@ US VISA (usvisa-info.com) appointment re-scheduler
 
 ## Prerequisites
 - Having a US VISA appointment scheduled already
-- Google Chrome installed (to be controlled by the script)
 - [Optional] API token from Pushover and/or a Sendgrid (for notifications)(You also can use esender.php file in this repo as a email pusher in your website)
 
 
