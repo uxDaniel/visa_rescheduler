@@ -25,8 +25,8 @@ SCHEDULE_ID = "1111111"
 PRIOD_START = "2023-04-10"
 PRIOD_END = "2023-05-01"
 # Get push notifications via http://your_website.com (Optional)
-SNWEB_USER = "XXXXXX"
-SNWEB_PASS = "XXXXXX"
+YOURWEB_USER = "XXXXXX"
+YOURWEB_PASS = "XXXXXX"
 
 # Embassy List
 Embassies = {
@@ -90,12 +90,12 @@ def send_notification(title, msg):
             "message": msg
         }
         requests.post(url, data)
-    if SNWEB_USER:
-        url = "https://snweb.ir/api/esender.php"
+    if YOURWEB_USER:
+        url = "https://your_website.com/api/esender.php"
         data = {
             "title": "VISA - " + str(title),
-            "user": SNWEB_USER,
-            "pass": SNWEB_PASS,
+            "user": YOURWEB_USER,
+            "pass": YOURWEB_PASS,
             "email": USERNAME,
             "msg": msg,
         }
