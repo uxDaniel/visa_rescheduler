@@ -59,7 +59,7 @@ RETRY_TIME_l = 10
 RETRY_TIME_u = 2 * minute
 # Temporary Banned (empty list): wait COOLDOWN_TIME hours
 BAN_COOLDOWN_TIME = 5
-# Cooling down after WORK_LIMIT_TIME hours of work (Evoiding Ban)
+# Cooling down after WORK_LIMIT_TIME hours of work (Avoiding Ban)
 WORK_LIMIT_TIME = 1.5
 WORK_COOLDOWN_TIME = 2
 
