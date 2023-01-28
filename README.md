@@ -1,20 +1,20 @@
 # visa_rescheduler
-US VISA (ais.usvisa-info.com) appointment re-scheduler - Colombian adaptation
+US VISA (usvisa-info.com) appointment re-scheduler
 
 ## Prerequisites
 - Having a US VISA appointment scheduled already
 - Google Chrome installed (to be controlled by the script)
-- Python v3 installed (for running the script)
-- API token from Pushover and/or a Sendgrid (for notifications)
+- [Optional] API token from Pushover and/or a Sendgrid (for notifications)(You also can use esender.php file in this repo as a email pusher in your website)
 
 
 ## Initial Setup
-- Create a `config.ini` file with all the details required
-- Install the required python packages: `pip3 install -r requirements.txt`
+- Install Google Chrome [for install goto: https://www.google.com/chrome/]
+- Install Python v3 [for install goto: https://www.python.org/downloads/]
+- Install the required python packages: Just run the bat file in windows. You can check the requirements by editing it as a txt-file.
 
 ## Executing the script
 - Simply run `python3 visa.py`
 - That's it!
 
 ## Acknowledgement
-Thanks to @yaojialyu for creating the initial script and to @cejaramillof for adapting it to Colombia!
+Thanks to every one who participated in this repo. Lots of people are using your great product without even appreciating you.
