@@ -33,9 +33,10 @@ Embassies = {
     # [EMBASSY (COUNTRY CODE), FACILITY_ID (EMBASSY ID)],
     "arm": ["en-am", 122], # English - Armenia
 }
+YOUR_EMBASSY = "arm"
 # Change "arm", based on your embassy Abbreviation in the list.
-EMBASSY = Embassies["arm"][0]
-FACILITY_ID = Embassies["arm"][1]
+EMBASSY = Embassies[YOUR_EMBASSY][0]
+FACILITY_ID = Embassies[YOUR_EMBASSY][1]
 
 # Get email notifications via https://sendgrid.com/ (Optional)
 SENDGRID_API_KEY = ""
