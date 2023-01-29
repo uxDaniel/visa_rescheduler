@@ -168,10 +168,12 @@ def reschedule(date):
     }
     r = requests.post(APPOINTMENT_URL, headers=headers, data=data)
     if(r.text.find('Successfully Scheduled') != -1):
+        title = "SUCCESS"
         msg = f"Rescheduled Successfully! {date} {time}"
     else:
+        title = "FAIL"
         msg = f"Reschedule Failed!!! {date} {time}"
-    return msg
+    return [title, msg]
 
 
 def get_date():
@@ -267,8 +269,7 @@ if __name__ == "__main__":
                 date = get_available_date(dates)
                 if date:
                     # A good date to schedule for
-                    msg = reschedule(date)
-                    END_MSG_TITLE = "SUCCESS"
+                    END_MSG_TITLE, msg = reschedule(date)
                     break
                 RETRY_WAIT_TIME = random.randint(RETRY_TIME_l, RETRY_TIME_u)
                 t1 = time.time()
