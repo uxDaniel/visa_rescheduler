@@ -19,7 +19,7 @@ US VISA (usvisa-info.com) appointment re-scheduler
 - Run `python3 visa.py`
 
 ## TODO
-- Adding a library of countries and their 
+- Adding a library of countries and their embassies information
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
