@@ -9,17 +9,22 @@ US VISA (usvisa-info.com) appointment re-scheduler
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
 - Install Python v3 [for install goto: https://www.python.org/downloads/]
-- Install the required python packages: Just run the bat file in windows. You can check the requirements by editing it as a txt-file.
+- Install the required python packages: Just run the bat file in windows. Or run the below commands:
+```
+pip install requests==2.27.1
+pip install selenium==4.2.0
+pip install webdriver-manager==3.7.0
+pip install sendgrid==6.9.7
+```
 
 ## How to use
 - Initial setup!
-- Edit your personal and embassy information [visa.py file].
-- [Optional] Edit your push notification accounts information [visa.py].
-- [Optional] Edit your website push notification [visa.py and esender.php files].
+- Edit information [config.ini.example file]. Then remove the ".example" from file name.
+- [Optional] Edit your push notification accounts information [config.ini.example file].
+- [Optional] Edit your website push notification [config.ini.example and esender.php files].
 - Run `python3 visa.py`
 
 ## TODO
-- Adding a library of countries and their embassies information
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
