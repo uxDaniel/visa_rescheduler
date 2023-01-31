@@ -27,7 +27,7 @@ SENDGRID_API_KEY =
 PERSONAL_SITE_USER = *********
 PERSONAL_SITE_PASS = *********
 PUSH_TARGET_EMAIL = notifyemail@gmail.com
-PERSONAL_PUSHER_URL = https://yoursite.ir/api/esender.php
+PERSONAL_PUSHER_URL = https://yoursite.com/api/esender.php
 
 [TIME]
 ; Time between retries/checks for available dates (seconds)
