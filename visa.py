@@ -2,6 +2,7 @@ import time
 import json
 import random
 import requests
+import configparser
 from datetime import datetime
 
 from selenium import webdriver
@@ -14,55 +15,58 @@ from webdriver_manager.chrome import ChromeDriverManager
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 
+from embassy import *
+
+config = configparser.ConfigParser()
+config.read('config.ini')
+
 # Personal Info:
 # Account and current appointment info from https://ais.usvisa-info.com
-USERNAME = "your@email.com"
-PASSWORD = "your_account_password"
+USERNAME = config['PERSONAL_INFO']['USERNAME']
+PASSWORD = config['PERSONAL_INFO']['PASSWORD']
 # Find SCHEDULE_ID in re-schedule page link:
 # https://ais.usvisa-info.com/en-am/niv/schedule/{SCHEDULE_ID}/appointment
-SCHEDULE_ID = "1111111"
+SCHEDULE_ID = config['PERSONAL_INFO']['SCHEDULE_ID']
 # Target Period:
-PRIOD_START = "2023-04-10"
-PRIOD_END = "2023-05-01"
-# Get push notifications via http://your_website.com (Optional)
-YOURWEB_USER = "XXXXXX"
-YOURWEB_PASS = "XXXXXX"
-
-# Embassy List
-Embassies = {
-    # [EMBASSY (COUNTRY CODE), FACILITY_ID (EMBASSY ID)],
-    "arm": ["en-am", 122], # English - Armenia
-}
-YOUR_EMBASSY = "arm"
-# Change "arm", based on your embassy Abbreviation in the list.
+PRIOD_START = config['PERSONAL_INFO']['PRIOD_START']
+PRIOD_END = config['PERSONAL_INFO']['PRIOD_END']
+# Embassy Section:
+YOUR_EMBASSY = config['PERSONAL_INFO']['YOUR_EMBASSY'] 
 EMBASSY = Embassies[YOUR_EMBASSY][0]
 FACILITY_ID = Embassies[YOUR_EMBASSY][1]
+REGEX_CONTINUE = Embassies[YOUR_EMBASSY][2]
 
+# Notification:
 # Get email notifications via https://sendgrid.com/ (Optional)
-SENDGRID_API_KEY = ""
+SENDGRID_API_KEY = config['NOTIFICATION']['SENDGRID_API_KEY']
 # Get push notifications via https://pushover.net/ (Optional)
-PUSH_TOKEN = ""
-PUSH_USER = ""
-
-# CHROMEDRIVER
-# Details for the script to control Chrome
-LOCAL_USE = True
-# Optional: HUB_ADDRESS is mandatory only when LOCAL_USE = False
-HUB_ADDRESS = "http://localhost:9515/wd/hub"
+PUSHOVER_TOKEN = config['NOTIFICATION']['PUSHOVER_TOKEN']
+PUSHOVER_USER = config['NOTIFICATION']['PUSHOVER_USER']
+# Get push notifications via PERSONAL WEBSITE http://yoursite.com (Optional)
+PERSONAL_SITE_USER = config['NOTIFICATION']['PERSONAL_SITE_USER']
+PERSONAL_SITE_PASS = config['NOTIFICATION']['PERSONAL_SITE_PASS']
+PUSH_TARGET_EMAIL = config['NOTIFICATION']['PUSH_TARGET_EMAIL']
+PERSONAL_PUSHER_URL = config['NOTIFICATION']['PERSONAL_PUSHER_URL']
 
 # Time Section:
 minute = 60
 hour = 60 * minute
 # Time between steps (interactions with forms)
 STEP_TIME = 0.5
-# Time between retries/checks for available dates
-RETRY_TIME_l = 10
-RETRY_TIME_u = 2 * minute
-# Temporary Banned (empty list): wait COOLDOWN_TIME hours
-BAN_COOLDOWN_TIME = 5
+# Time between retries/checks for available dates (seconds)
+RETRY_TIME_L_BOUND = config['TIME'].getfloat('RETRY_TIME_L_BOUND')
+RETRY_TIME_U_BOUND = config['TIME'].getfloat('RETRY_TIME_U_BOUND')
 # Cooling down after WORK_LIMIT_TIME hours of work (Avoiding Ban)
-WORK_LIMIT_TIME = 1.5
-WORK_COOLDOWN_TIME = 2
+WORK_LIMIT_TIME = config['TIME'].getfloat('WORK_LIMIT_TIME')
+WORK_COOLDOWN_TIME = config['TIME'].getfloat('WORK_COOLDOWN_TIME')
+# Temporary Banned (empty list): wait COOLDOWN_TIME hours
+BAN_COOLDOWN_TIME = config['TIME'].getfloat('BAN_COOLDOWN_TIME')
+
+# CHROMEDRIVER
+# Details for the script to control Chrome
+LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
+# Optional: HUB_ADDRESS is mandatory only when LOCAL_USE = False
+HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
 FIRST_PAGE_LINK = f"https://ais.usvisa-info.com/{EMBASSY}/niv"
 DATE_URL = f"https://ais.usvisa-info.com/{EMBASSY}/niv/schedule/{SCHEDULE_ID}/appointment/days/{FACILITY_ID}.json?appointments[expedite]=false"
@@ -83,21 +87,21 @@ def send_notification(title, msg):
             print(response.headers)
         except Exception as e:
             print(e.message)
-    if PUSH_TOKEN:
+    if PUSHOVER_TOKEN:
         url = "https://api.pushover.net/1/messages.json"
         data = {
-            "token": PUSH_TOKEN,
-            "user": PUSH_USER,
+            "token": PUSHOVER_TOKEN,
+            "user": PUSHOVER_USER,
             "message": msg
         }
         requests.post(url, data)
-    if YOURWEB_USER:
-        url = "https://your_website.com/api/esender.php"
+    if PERSONAL_SITE_USER:
+        url = PERSONAL_PUSHER_URL
         data = {
             "title": "VISA - " + str(title),
-            "user": YOURWEB_USER,
-            "pass": YOURWEB_PASS,
-            "email": USERNAME,
+            "user": PERSONAL_SITE_USER,
+            "pass": PERSONAL_SITE_PASS,
+            "email": PUSH_TARGET_EMAIL,
             "msg": msg,
         }
         requests.post(url, data)
@@ -146,7 +150,7 @@ def start_process():
     auto_action("Privacy", "class", "icheckbox", "click", "", random.randint(1, 3))
     auto_action("Commit", "name", "commit", "click", "", random.randint(1, 3))
 
-    Wait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(),'Continue')]")))
+    Wait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), '" + REGEX_CONTINUE + "')]")))
     print("\n\tlogin successful!")
 
 
@@ -252,7 +256,7 @@ if __name__ == "__main__":
             dates = get_date()
             if not dates:
                 # Ban Situation
-                msg = f"List is empty, Probabely banned!\n\t==> Sleep for {BAN_COOLDOWN_TIME} hours!\n"
+                msg = f"List is empty, Probabely banned!\n\tSleep for {BAN_COOLDOWN_TIME} hours!\n"
                 print(msg)
                 info_logger(LOG_FILE_NAME, msg)
                 send_notification("BAN", msg)
@@ -272,7 +276,7 @@ if __name__ == "__main__":
                     # A good date to schedule for
                     END_MSG_TITLE, msg = reschedule(date)
                     break
-                RETRY_WAIT_TIME = random.randint(RETRY_TIME_l, RETRY_TIME_u)
+                RETRY_WAIT_TIME = random.randint(RETRY_TIME_L_BOUND, RETRY_TIME_U_BOUND)
                 t1 = time.time()
                 total_time = t1 - t0
                 msg = "\nWorking Time:  ~ {:.2f} minutes".format(total_time/minute)
