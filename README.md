@@ -28,7 +28,7 @@ pip install sendgrid==6.9.7
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
-- Add sound alert when for different incidents.
+- Add sound alert for different events.
 
 ## Acknowledgement
 Thanks to everyone who participated in this repo. Lots of people are using your excellent product without even appreciating you.
