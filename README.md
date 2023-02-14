@@ -5,6 +5,8 @@ US VISA (usvisa-info.com) appointment re-scheduler
 - Having a US VISA appointment scheduled already
 - [Optional] API token from Pushover and/or a Sendgrid (for notifications)(You also can use the esender.php file in this repo as an email pusher on your website)
 
+## Attention
+- Right now, there are lots of countries which are not supported in the Bot. List of supported countries is presented in 'embassy.py' file.
 
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
@@ -25,10 +27,12 @@ pip install sendgrid==6.9.7
 - Run `python3 visa.py`
 
 ## TODO
+- Add group-appointment booking ability to the program.
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
 - Add sound alert for different events.
+- Extend the embassies list.
 
 ## Acknowledgement
 Thanks to everyone who participated in this repo. Lots of people are using your excellent product without even appreciating you.
