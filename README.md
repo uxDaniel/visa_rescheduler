@@ -6,7 +6,8 @@ US VISA (usvisa-info.com) appointment re-scheduler
 - [Optional] API token from Pushover and/or a Sendgrid (for notifications)(You also can use the esender.php file in this repo as an email pusher on your website)
 
 ## Attention
-- Right now, there are lots of countries which are not supported in the Bot. List of supported countries is presented in 'embassy.py' file.
+- Right now, there are lots of countries which are not supported. List of supported countries is presented in 'embassy.py' file.
+- Right now, group booking is not supported.
 
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
