@@ -8,8 +8,8 @@ SCHEDULE_ID = 99999999
 ; Target Period:
 PRIOD_START = 2023-03-20
 PRIOD_END = 2023-06-01
-; Change "arm", based on your embassy Abbreviation in embassy.py list.
-YOUR_EMBASSY = arm
+; Change "en-am-ye", based on your embassy Abbreviation in embassy.py list.
+YOUR_EMBASSY = en-am-ye
 
 [CHROMEDRIVER]
 ; Details for the script to control Chrome
