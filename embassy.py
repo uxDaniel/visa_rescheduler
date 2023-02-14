@@ -1,7 +1,7 @@
 # Embassy List
 Embassies = {
     # [EMBASSY (COUNTRY CODE), FACILITY_ID (EMBASSY ID), "Continue in different languages"],
-    "en-am-ye": ["en-am", 122, "Continue"], # English - Armenia - YEREVAN
+    "en-am-yer": ["en-am", 122, "Continue"], # English - Armenia - YEREVAN
     "es-co-bog": ["es-co", 25, "Continuar"], # Spanish - Colombia - Bogotá
     "en-ca-cal": ["en-ca", 89, "Continue"], # English - Canada - Calgary
     "en-ca-hal": ["en-ca", 90, "Continue"], # English - Canada - Halifax
