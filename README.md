@@ -7,7 +7,6 @@ US VISA (usvisa-info.com) appointment re-scheduler
 
 ## Attention
 - Right now, there are lots of countries which are not supported. List of supported countries is presented in 'embassy.py' file.
-- Right now, group booking is not supported.
 
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
@@ -28,7 +27,6 @@ pip install sendgrid==6.9.7
 - Run `python3 visa.py`
 
 ## TODO
-- Add group-appointment booking ability to the program.
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
