@@ -6,7 +6,9 @@ US VISA (usvisa-info.com) appointment re-scheduler
 - [Optional] API token from Pushover and/or a Sendgrid (for notifications)(You also can use the esender.php file in this repo as an email pusher on your website)
 
 ## Attention
-- Right now, there are lots of countries which are not supported. List of supported countries is presented in 'embassy.py' file.
+- Right now, there are lots of unsupported embassies in our repository. A list of supported embassies is presented in the 'embassy.py' file.
+- To add a new embassy (using English), you should find the embassy's "facility id." To do this, using google chrome, on the booking page of your account, right-click on the location section, then click "inspect." Then the right-hand window will be opened, highlighting the "select" item. You can find the "facility id" here and add this facility id in the 'embassy.py' file. There might be several facility ids for several different embassies. They can be added too. Please use the picture below as an illustration of the process.
+![Finding Facility id](https://github.com/Soroosh-N/us_visa_scheduler/blob/main/_img.png?raw=true)
 
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
