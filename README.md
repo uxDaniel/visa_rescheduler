@@ -13,7 +13,7 @@ The visa_rescheduler is a bot for US VISA (usvisa-info.com) appointment reschedu
 ## Initial Setup
 - Install Google Chrome [for install goto: https://www.google.com/chrome/]
 - Install Python v3 [for install goto: https://www.python.org/downloads/]
-- Install the required python packages: Just run the bat file in windows. Or run the below commands:
+- Install the required python packages: Just run the bat file in the Microsoft Windows. Or run the below commands:
 ```
 pip install requests==2.27.1
 pip install selenium==4.2.0
@@ -26,13 +26,13 @@ pip install sendgrid==6.9.7
 - Edit information [config.ini.example file]. Then remove the ".example" from file name.
 - [Optional] Edit your push notification accounts information [config.ini.example file].
 - [Optional] Edit your website push notification [config.ini.example and esender.php files].
-- Run `python3 visa.py`
+- Run visa.py file, using `python3 visa.py`
 
 ## TODO
 - Make timing optimum. (There are lots of unanswered questions. How is the banning algorithm? How can we avoid it? etc.)
 - Adding a GUI (Based on PyQt)
 - Multi-account support (switching between accounts in Resting times)
-- Add sound alert for different events.
+- Add a sound alert for different events.
 - Extend the embassies list.
 
 ## Acknowledgement
