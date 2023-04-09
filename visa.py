@@ -183,16 +183,15 @@ def reschedule(date):
 
 def get_date():
     # Requesting to get the whole available dates
-    driver.get(APPOINTMENT_URL)
     session = driver.get_cookie("_yatri_session")["value"]
-    script = JS_SCRIPT % (str(url), session)
+    script = JS_SCRIPT % (str(DATE_URL), session)
     content = driver.execute_script(script)
     return json.loads(content)
 
 def get_time(date):
     time_url = TIME_URL % date
     session = driver.get_cookie("_yatri_session")["value"]
-    script = JS_SCRIPT % (str(url), session)
+    script = JS_SCRIPT % (str(time_url), session)
     content = driver.execute_script(script)
     data = json.loads(content)
     time = data.get("available_times")[-1]
