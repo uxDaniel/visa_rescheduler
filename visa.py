@@ -68,12 +68,19 @@ LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
 # Optional: HUB_ADDRESS is mandatory only when LOCAL_USE = False
 HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
-FIRST_PAGE_LINK = f"https://ais.usvisa-info.com/{EMBASSY}/niv"
+SIGN_IN_LINK = f"https://ais.usvisa-info.com/{EMBASSY}/niv/users/sign_in"
+APPOINTMENT_URL = f"https://ais.usvisa-info.com/{EMBASSY}/niv/schedule/{SCHEDULE_ID}/appointment"
 DATE_URL = f"https://ais.usvisa-info.com/{EMBASSY}/niv/schedule/{SCHEDULE_ID}/appointment/days/{FACILITY_ID}.json?appointments[expedite]=false"
 TIME_URL = f"https://ais.usvisa-info.com/{EMBASSY}/niv/schedule/{SCHEDULE_ID}/appointment/times/{FACILITY_ID}.json?date=%s&appointments[expedite]=false"
-APPOINTMENT_URL = f"https://ais.usvisa-info.com/{EMBASSY}/niv/schedule/{SCHEDULE_ID}/appointment"
 SIGN_OUT_LINK = f"https://ais.usvisa-info.com/{EMBASSY}/niv/users/sign_out"
 
+JS_SCRIPT = ("var req = new XMLHttpRequest();"
+             f"req.open('GET', '%s', false);"
+             "req.setRequestHeader('Accept', 'application/json, text/javascript, */*; q=0.01');"
+             "req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');"
+             f"req.setRequestHeader('Cookie', '_yatri_session=%s');"
+             "req.send(null);"
+             "return req.responseText;")
 
 def send_notification(title, msg):
     print(f"Sending notification!")
@@ -136,23 +143,16 @@ def auto_action(label, find_by, el_type, action, value, sleep_time=0):
 
 def start_process():
     # Bypass reCAPTCHA
-    driver.get(FIRST_PAGE_LINK)
+    driver.get(SIGN_IN_LINK)
     time.sleep(STEP_TIME)
-
-    auto_action("Arrow down bounce", "xpath", '//a[@class="down-arrow bounce"]', "click", "", STEP_TIME)
-    auto_action("Login start", "xpath", '//*[@id="header"]/nav/div[2]/div[1]/ul/li[3]/a', "click", "", STEP_TIME)
-
     Wait(driver, 60).until(EC.presence_of_element_located((By.NAME, "commit")))
-
     auto_action("Click bounce", "xpath", '//a[@class="down-arrow bounce"]', "click", "", STEP_TIME)
-    auto_action("Email", "id", "user_email", "send", USERNAME, random.randint(1, 3))
-    auto_action("Password", "id", "user_password", "send", PASSWORD, random.randint(1, 3))
-    auto_action("Privacy", "class", "icheckbox", "click", "", random.randint(1, 3))
-    auto_action("Commit", "name", "commit", "click", "", random.randint(1, 3))
-
+    auto_action("Email", "id", "user_email", "send", USERNAME, STEP_TIME)
+    auto_action("Password", "id", "user_password", "send", PASSWORD, STEP_TIME)
+    auto_action("Privacy", "class", "icheckbox", "click", "", STEP_TIME)
+    auto_action("Enter Panel", "name", "commit", "click", "", STEP_TIME)
     Wait(driver, 60).until(EC.presence_of_element_located((By.XPATH, "//a[contains(text(), '" + REGEX_CONTINUE + "')]")))
-    print("\n\tlogin successful!")
-
+    print("\n\tlogin successful!\n")
 
 def reschedule(date):
     time = get_time(date)
@@ -183,19 +183,17 @@ def reschedule(date):
 
 def get_date():
     # Requesting to get the whole available dates
-    driver.get(DATE_URL)
-    if not is_logged_in():
-        start_process()
-        return get_date()
-    else:
-        content = driver.find_element(By.TAG_NAME, 'pre').text
-        return json.loads(content)
-
+    driver.get(APPOINTMENT_URL)
+    session = driver.get_cookie("_yatri_session")["value"]
+    script = JS_SCRIPT % (str(url), session)
+    content = driver.execute_script(script)
+    return json.loads(content)
 
 def get_time(date):
     time_url = TIME_URL % date
-    driver.get(time_url)
-    content = driver.find_element(By.TAG_NAME, 'pre').text
+    session = driver.get_cookie("_yatri_session")["value"]
+    script = JS_SCRIPT % (str(url), session)
+    content = driver.execute_script(script)
     data = json.loads(content)
     time = data.get("available_times")[-1]
     print(f"Got time successfully! {date} {time}")
