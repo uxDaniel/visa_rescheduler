@@ -1,4 +1,0 @@
-selenium==4.2.0
-webdriver-manager==3.7.0
-requests==2.27.1
-sendgrid==6.9.7

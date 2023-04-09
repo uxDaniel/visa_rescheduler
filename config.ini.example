@@ -1,13 +1,15 @@
-[USVISA]
+[PERSONAL_INFO]
 ; Account and current appointment info from https://ais.usvisa-info.com
-USERNAME = example@example.com
-PASSWORD = xxxxxxxxxx
+USERNAME = account@gmail.com
+PASSWORD = account_pass
+; Find SCHEDULE_ID in re-schedule page link:
+; https://ais.usvisa-info.com/en-am/niv/schedule/{SCHEDULE_ID}/appointment
 SCHEDULE_ID = 99999999
-MY_SCHEDULE_DATE = 2024-01-01
-; Spanish - Colombia
-COUNTRY_CODE = es-co
-; Bogotá
-FACILITY_ID = 25
+; Target Period:
+PRIOD_START = 2023-03-20
+PRIOD_END = 2023-06-01
+; Change "en-am-yer", based on your embassy Abbreviation in embassy.py list.
+YOUR_EMBASSY = en-am-yer
 
 [CHROMEDRIVER]
 ; Details for the script to control Chrome
@@ -15,11 +17,24 @@ LOCAL_USE = True
 ; Optional: HUB_ADDRESS is mandatory only when LOCAL_USE = False
 HUB_ADDRESS = http://localhost:9515/wd/hub
 
-[PUSHOVER]
+[NOTIFICATION]
 ; Get push notifications via https://pushover.net/ (optional)
-PUSH_TOKEN = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-PUSH_USER = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-
-[SENDGRID]
+PUSHOVER_TOKEN = 
+PUSHOVER_USER = 
 ; Get email notifications via https://sendgrid.com/ (optional)
 SENDGRID_API_KEY = 
+; Get push notifications via PERSONAL WEBSITE http://yoursite.com (Optional)
+PERSONAL_SITE_USER = *********
+PERSONAL_SITE_PASS = *********
+PUSH_TARGET_EMAIL = notifyemail@gmail.com
+PERSONAL_PUSHER_URL = https://yoursite.com/api/esender.php
+
+[TIME]
+; Time between retries/checks for available dates (seconds)
+RETRY_TIME_L_BOUND = 10
+RETRY_TIME_U_BOUND = 120
+; Cooling down after WORK_LIMIT_TIME hours of work (Avoiding Ban)(hours)
+WORK_LIMIT_TIME = 1.5
+WORK_COOLDOWN_TIME = 2.25
+; Temporary Banned (empty list): wait COOLDOWN_TIME (hours)
+BAN_COOLDOWN_TIME = 5
