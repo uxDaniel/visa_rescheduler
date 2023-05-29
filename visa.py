@@ -36,6 +36,9 @@ PUSH_USER = config['PUSHOVER']['PUSH_USER']
 LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
 HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
+MAILGUN_API_KEY = config['MAILGUN']['MAILGUN_API_KEY']
+MAILGUN_DOMAIN = config['MAILGUN']['MAILGUN_DOMAIN']
+
 REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
 
 
@@ -52,9 +55,24 @@ TIME_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_I
 APPOINTMENT_URL = f"https://ais.usvisa-info.com/{COUNTRY_CODE}/niv/schedule/{SCHEDULE_ID}/appointment"
 EXIT = False
 
+# Send Mail using mailgun
+def send_mailgun_notification(msg):
+    print(f"Sending notification: {msg}")
+
+    if MAILGUN_API_KEY and MAILGUN_DOMAIN:
+        return requests.post(
+            f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+            auth=("api", MAILGUN_API_KEY),
+            data={"from": f"US Visa <mailgun@{MAILGUN_DOMAIN}>",
+                  "to": [USERNAME],
+                  "subject": msg,
+                  "text": msg})
+
 
 def send_notification(msg):
     print(f"Sending notification: {msg}")
+
+    send_mailgun_notification(msg)
 
     if SENDGRID_API_KEY:
         message = Mail(

@@ -23,3 +23,8 @@ PUSH_USER = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 [SENDGRID]
 ; Get email notifications via https://sendgrid.com/ (optional)
 SENDGRID_API_KEY = 
+
+[MAILGUN]
+; Get email notifications via https://www.mailgun.com/ (optional)
+MAILGUN_API_KEY = 
+MAILGUN_DOMAIN = 
