@@ -14,6 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait as Wait
 from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.chrome.service import Service
 
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
@@ -36,14 +38,14 @@ PUSH_USER = config['PUSHOVER']['PUSH_USER']
 LOCAL_USE = config['CHROMEDRIVER'].getboolean('LOCAL_USE')
 HUB_ADDRESS = config['CHROMEDRIVER']['HUB_ADDRESS']
 
-REGEX_CONTINUE = "//a[contains(text(),'Continuar')]"
+REGEX_CONTINUE = "//a[contains(text(),'Continue')]"
 
 
 # def MY_CONDITION(month, day): return int(month) == 11 and int(day) >= 5
 def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
 
 STEP_TIME = 0.5  # time between steps (interactions with forms): 0.5 seconds
-RETRY_TIME = 60*10  # wait time between retries/checks for available dates: 10 minutes
+RETRY_TIME = 60*5  # wait time between retries/checks for available dates: 10 minutes
 EXCEPTION_TIME = 60*30  # wait time when an exception occurs: 30 minutes
 COOLDOWN_TIME = 60*60  # wait time when temporary banned (empty list): 60 minutes
 
@@ -83,12 +85,45 @@ def send_notification(msg):
 
 def get_driver():
     if LOCAL_USE:
-        dr = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        caps = DesiredCapabilities.CHROME
+        caps['goog:loggingPrefs'] = {'performance': 'ALL'}
+        dr = webdriver.Chrome(desired_capabilities=caps, service=Service(ChromeDriverManager().install()))
     else:
         dr = webdriver.Remote(command_executor=HUB_ADDRESS, options=webdriver.ChromeOptions())
     return dr
 
 driver = get_driver()
+
+
+
+def process_browser_log_entry(entry):
+    response = json.loads(entry['message'])['message']
+    return response
+
+
+
+def get_date_new(url):
+    driver.get(url)
+    time.sleep(10) # wait for all the data to arrive. 
+    browser_log = driver.get_log('performance')
+    events = [process_browser_log_entry(entry) for entry in browser_log]
+    events = [event for event in events if 'Network.response' in event['method']]
+    targetIndex = -1;
+    for event in events:
+        if "response" in event["params"] and "url" in event["params"]["response"]:
+            if "/appointment/days/" in event["params"]["response"]["url"]:
+                print ("Found the target url: " + event["params"]["response"]["url"])
+                print ("Index: " + str(events.index(event)))
+                targetIndex = events.index(event)
+                break
+    print("check target index: " + str(targetIndex))
+    if targetIndex != -1:
+        body = driver.execute_cdp_cmd('Network.getResponseBody', {'requestId': events[targetIndex]["params"]["requestId"]})
+        print("Here is the body: " + str(body))
+        available_date = json.loads(body["body"])
+        return available_date
+    else:
+        return []
 
 
 def login():
@@ -250,7 +285,7 @@ if __name__ == "__main__":
             print(f"Retry count: {retry_count}")
             print()
 
-            dates = get_date()[:5]
+            dates = get_date_new(APPOINTMENT_URL)[:5]
             if not dates:
               msg = "List is empty"
               send_notification(msg)
