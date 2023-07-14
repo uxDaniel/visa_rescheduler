@@ -8,7 +8,7 @@ import configparser
 from datetime import datetime
 
 import requests
-from selenium import webdriver
+from seleniumwire import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait as Wait
@@ -80,6 +80,8 @@ def send_notification(msg):
         }
         requests.post(url, data)
 
+def interceptor(request):
+    request.headers['X-Requested-With'] = 'XMLHttpRequest'
 
 def get_driver():
     if LOCAL_USE:
@@ -141,7 +143,14 @@ def do_login_action():
 
 
 def get_date():
+    driver.request_interceptor = interceptor
     driver.get(DATE_URL)
+    headers = {
+        "User-Agent": driver.execute_script("return navigator.userAgent;"),
+        "X-Requested-With": "XMLHttpRequest",
+        "Cookie": "_yatri_session=" + driver.get_cookie("_yatri_session")["value"]
+    }
+    
     if not is_logged_in():
         login()
         return get_date()
