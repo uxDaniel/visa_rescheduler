@@ -46,7 +46,7 @@ REGEX_CONTINUE = "//a[contains(text(),'Continue')]"
 def MY_CONDITION(month, day): return True # No custom condition wanted for the new scheduled date
 
 STEP_TIME = 0.5  # time between steps (interactions with forms): 0.5 seconds
-RETRY_TIME = 60*5  # wait time between retries/checks for available dates: 5 minutes
+RETRY_TIME = 60*3  # wait time between retries/checks for available dates: 3 minutes
 EXCEPTION_TIME = 60*30  # wait time when an exception occurs: 30 minutes
 COOLDOWN_TIME = 60*60  # wait time when temporary banned (empty list): 60 minutes
 
@@ -88,7 +88,10 @@ def get_driver():
     if LOCAL_USE:
         caps = DesiredCapabilities.CHROME
         caps['goog:loggingPrefs'] = {'performance': 'ALL'}
-        dr = webdriver.Chrome(desired_capabilities=caps, service=Service(ChromeDriverManager().install()))
+        # dr = webdriver.Chrome(desired_capabilities=caps, service=Service(ChromeDriverManager().install()))
+        service = Service()
+        options = webdriver.ChromeOptions()
+        dr = webdriver.Chrome(service=service, options=options)
     else:
         dr = webdriver.Remote(command_executor=HUB_ADDRESS, options=webdriver.ChromeOptions())
     return dr
@@ -104,8 +107,21 @@ def process_browser_log_entry(entry):
 
 
 def get_date_new(url):
-    driver.get(url)
+    # no longer able to jump with url, go there by clicking the button
+    #driver.get(url)
+    continueBtn = driver.find_element(By.XPATH, '//a[contains(text(),"Continue")]')
+    continueBtn.click()
     time.sleep(2) # wait for all the data to arrive. 
+    # find the 4th item's child element in the list
+    serviceList = driver.find_element(By.XPATH, '//ul[@class="accordion custom_icons"]')
+    child_elements = serviceList.find_elements_by_css_selector("li")
+    # get the 4th chiild item from the list then the first item that
+    rescheduleBtn = (child_elements[3].find_elements_by_css_selector("a"))[0]
+    rescheduleBtn.click()
+    time.sleep(2) # wait for all the data to arrive. 
+    realRescheduleBtn = driver.find_element(By.XPATH, '//a[contains(text(),"Reschedule Appointment")]')
+    realRescheduleBtn.click()
+    time.sleep(2) # wait for all the data to arrive.
     browser_log = driver.get_log('performance')
     events = [process_browser_log_entry(entry) for entry in browser_log]
     events = [event for event in events if 'Network.response' in event['method']]
@@ -392,10 +408,10 @@ if __name__ == "__main__":
             print()
 
             dates = get_date_new(APPOINTMENT_URL)[:5]
-            if not dates:
-              msg = "List is empty"
-              send_notification(msg)
-              EXIT = True
+            # if not dates:
+            #   msg = "List is empty"
+            #   send_notification(msg)
+            #   EXIT = True
             print_dates(dates)
             date = get_available_date(dates)
             print()
@@ -415,7 +431,7 @@ if __name__ == "__main__":
               msg = "List is empty"
               send_notification(msg)
               #EXIT = True
-              time.sleep(COOLDOWN_TIME)
+              time.sleep(RETRY_TIME)
             else:
               time.sleep(RETRY_TIME)
 
