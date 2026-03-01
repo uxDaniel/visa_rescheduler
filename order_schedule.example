@@ -1,0 +1,15 @@
+https://ais.usvisa-info.com/es-co/niv/schedule/123456/appointment/days/25.json?appointments[expedite]=false
+
+[{"date":"2022-12-15","business_day":true},{"date":"2025-04-25","business_day":true},{"date":"2025-05-02","business_day":true},{"date":"2025-05-05","business_day":true},{"date":"2025-05-06","business_day":true},{"date":"2025-05-07","business_day":true},{"date":"2025-05-08","business_day":true},{"date":"2025-05-09","business_day":true},{"date":"2025-05-12","business_day":true},{"date":"2025-05-13","business_day":true},{"date":"2025-05-14","business_day":true},{"date":"2025-05-15","business_day":true},{"date":"2025-05-16","business_day":true},{"date":"2025-05-19","business_day":true},{"date":"2025-05-20","business_day":true},{"date":"2025-05-21","business_day":true},{"date":"2025-05-23","business_day":true},{"date":"2025-05-27","business_day":true},{"date":"2025-05-28","business_day":true},{"date":"2025-05-30","business_day":true}]
+
+https://ais.usvisa-info.com/es-co/niv/schedule/123456/appointment/times/25.json?date=2025-05-06&appointments[expedite]=false
+
+{"available_times":["08:00","08:45","09:30","09:45"],"business_times":["08:00","08:45","09:30","09:45"]}
+
+https://ais.usvisa-info.com/es-co/niv/schedule/123456/appointment/days/26.json?&consulate_id=25&consulate_date=2025-05-06&consulate_time=08:00&appointments[expedite]=false
+
+[{"date":"2025-04-29","business_day":true},{"date":"2025-05-02","business_day":true},{"date":"2025-05-05","business_day":true}]
+
+https://ais.usvisa-info.com/es-co/niv/schedule/123456/appointment/times/26.json?date=2025-04-29&consulate_id=25&consulate_date=2025-05-06&consulate_time=08:00&appointments[expedite]=false
+
+{"available_times":["08:00","11:30","11:45"],"business_times":["08:00","11:30","11:45"]}
